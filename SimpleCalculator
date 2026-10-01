@@ -4,60 +4,49 @@ public class SimpleCalculator {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        while (true) { //зацыкливаем ввод
+        while (true) {
             System.out.println("Ввод: число знак число или '000' для выхода:");
-            String input = scanner.nextLine();
+            String input = scanner.nextLine().trim();
 
-            // вводим "000", выходим из программы
             if (input.equalsIgnoreCase("000")) {
                 System.out.println("Выход из программы.");
                 break;
             }
 
-            // Убираем все пробелы из введенной строки
             input = input.replaceAll("\\s+", "");
 
             try {
-                // Нахождение операции (знак) и разделение на две части
                 int index = findOperatorIndex(input);
-                if (index == -1) {
-                    throw new IllegalArgumentException("Ввод должен содержать два числа и одну операцию.");
+                if (index <= 0 || index == input.length() - 1) {
+                    throw new IllegalArgumentException(
+                        "Ввод должен содержать два числа и одну операцию (например, 2+3).");
                 }
 
-                // Извлечение чисел и операции
                 int a = Integer.parseInt(input.substring(0, index));
-                String operation = String.valueOf(input.charAt(index));
+                char operation = input.charAt(index);
                 int b = Integer.parseInt(input.substring(index + 1));
 
-                // Проверка вводимых чисел
-                if (a < 1 || a > 10 || b < 1 || b > 10) {
-                    throw new IllegalArgumentException("Только числа от 1 до 10");
+                if (a < -10 || a > 10 || b < -10 || b > 10) {
+                    throw new IllegalArgumentException("Числа должны быть в диапазоне от -10 до 10.");
                 }
 
-                int result = 0;
+                int result;
                 switch (operation) {
-                    case "+":
-                        result = a + b;
-                        break;
-                    case "-":
-                        result = a - b;
-                        break;
-                    case "*":
-                        result = a * b;
-                        break;
-                    case "/":
-                        if (b == 0) {
-                            throw new ArithmeticException("Делить на ноль нельзя!");
-                        }
-                        result = a / b; // целочисленное деление
+                    case '+': result = a + b; break;
+                    case '-': result = a - b; break;
+                    case '*': result = a * b; break;
+                    case '/':
+                        if (b == 0) throw new ArithmeticException("Делить на ноль нельзя!");
+                        result = a / b;
                         break;
                     default:
-                        throw new IllegalArgumentException("Неправильная операция. Используем только эти знаки: +, -, *, /.");
+                        throw new IllegalArgumentException(
+                            "Неправильная операция. Используйте: +, -, *, /.");
                 }
 
                 System.out.println("Итого: " + result);
             } catch (NumberFormatException e) {
-                System.out.println("Ошибка: вводим только целые числа.");
+                System.out.println("Ошибка: вводите только целые числа.");
             } catch (IllegalArgumentException | ArithmeticException e) {
                 System.out.println("Ошибка: " + e.getMessage());
             }
@@ -66,14 +55,18 @@ public class SimpleCalculator {
         scanner.close();
     }
 
-    // Метод для нахождения индекса оператора в строке
+    /**
+     * Ищет индекс оператора, пропуская ведущий минус (для отрицательных чисел).
+     * Например: "-5+3" → индекс '+' = 2; "10*-2" → индекс '*' = 2.
+     */
     private static int findOperatorIndex(String input) {
-        for (int i = 0; i < input.length(); i++) {
+        int start = (input.startsWith("-") || input.startsWith("+")) ? 1 : 0;
+        for (int i = start; i < input.length(); i++) {
             char ch = input.charAt(i);
             if (ch == '+' || ch == '-' || ch == '*' || ch == '/') {
                 return i;
             }
         }
-        return -1; // если оператор не найден
+        return -1;
     }
 }
